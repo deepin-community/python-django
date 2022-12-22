@@ -1,0 +1,64 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=django
+
+PREFIX = debian/python3-django
+PREFIX_DOC = debian/python-django-doc
+
+%:
+	dh $@ --with sphinxdoc,python3 --buildsystem=pybuild
+
+override_dh_auto_clean:
+	dh_auto_clean
+	make -C docs clean
+
+override_dh_auto_build:
+	dh_auto_build
+ifeq (,$(filter nodoc,$(DEB_BUILD_PROFILES)))
+	make -C docs html LANGUAGE=en
+endif
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_PROFILES)))
+	set -e; cd tests && for python in $$(py3versions -s); do \
+	    	echo "——— Running tests with $$python ———"; \
+		LC_ALL=C.UTF-8 PYTHONPATH=.. $$python ./runtests.py --verbosity=2; \
+	done
+endif
+
+override_dh_clean:
+	# backup~ is used in tests
+	dh_clean -Xbackup~
+
+override_dh_auto_install:
+	dh_auto_install
+	
+	# Remove embedded Javascript libraries
+	set -e; for FILENAME in jquery.js jquery.min.js; do \
+		find $(PREFIX) -name $$FILENAME -exec \
+			ln -sfv /usr/share/javascript/jquery/$$FILENAME {} \;; \
+	done
+	
+	# Drop language extension-based executable in /usr/bin
+	rm $(PREFIX)/usr/bin/django-admin.py
+
+override_dh_install:
+	dh_install
+	
+	# Fix permissions
+	chmod 644 $(PREFIX)/usr/share/bash-completion/completions/django_bash_completion
+
+override_dh_installdocs:
+	dh_installdocs
+	
+	# Drop all extra license files
+	find $(PREFIX) $(PREFIX_DOC) \( -name LICENSE -o -iname license\*.\* \) -delete
+	
+override_dh_python3:
+	dh_python3
+	
+	# Move documentation to /usr/share/doc
+	set -e; for X in fonts img; do \
+		mv -v $(PREFIX)/usr/lib/python3/dist-packages/django/contrib/admin/static/admin/$$X/README.txt \
+			$(PREFIX)/usr/share/doc/python3-django/README-$$X.txt; \
+	done

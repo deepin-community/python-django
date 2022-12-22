@@ -1,0 +1,6 @@
+0001-disable-sources-in-sphinxdoc.diff
+0002-use_debian_geoip_database_as_default.diff
+0004-Use-locally-installed-documentation-sources.patch
+0004-Set-the-default-shebang-to-new-projects-to-use-Pytho.patch
+0005-Use-usr-bin-env-python3-shebang-for-django-admin.py.patch
+0006-Fixed-32690-Fixed-__in-lookup-crash-when-combining-w.patch

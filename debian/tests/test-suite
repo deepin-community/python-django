@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+cp -a tests $AUTOPKGTEST_TMP/tests
+cd $AUTOPKGTEST_TMP/tests
+
+LC_ALL=C.UTF-8 PYTHONPATH=.. python3 ./runtests.py --verbosity 2
