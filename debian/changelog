@@ -1,3 +1,415 @@
+python-django (3:4.2.13-1) unstable; urgency=medium
+
+  * New upstream bugfix releases.
+    <https://docs.djangoproject.com/en/5.0/releases/4.2.12/>
+    <https://docs.djangoproject.com/en/5.0/releases/4.2.13/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 08 May 2024 11:28:44 +0100
+
+python-django (3:4.2.11-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2024-27351: Fix a potential regular expression denial-of-service
+      (ReDoS) attack in django.utils.text.Truncator.words. This method
+      (with html=True) and the truncatewords_html template filter were subject
+      to a potential regular expression denial-of-service attack via a suitably
+      crafted string. This is, in part, a follow up to CVE-2019-14232 and
+      CVE-2023-43665.
+
+    <https://docs.djangoproject.com/en/dev/releases/4.2.11/>
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 05 Mar 2024 13:03:35 +0000
+
+python-django (3:4.2.10-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2024-24680: Potential denial-of-service in intcomma template filter.
+      The intcomma template filter was subject to a potential denial-of-service
+      attack when used with very long strings.
+
+    <https://docs.djangoproject.com/en/dev/releases/4.2.10/>
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 06 Feb 2024 08:15:25 -0800
+
+python-django (3:4.2.9-1) unstable; urgency=medium
+
+  * New upstream bugfix release.
+    <https://docs.djangoproject.com/en/dev/releases/4.2.9/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 03 Jan 2024 11:15:04 +0000
+
+python-django (3:4.2.8-1) unstable; urgency=medium
+
+  * New upstream bugfix release.
+    <https://docs.djangoproject.com/en/5.0/releases/4.2.8/>
+
+ -- Chris Lamb <lamby@debian.org>  Thu, 07 Dec 2023 13:05:03 +0000
+
+python-django (3:4.2.6-1) unstable; urgency=high
+
+  * New upstream security release.
+
+    - CVE-2023-43665: Address a denial-of-service possibility in
+      django.utils.text.Truncator.
+
+      Following the fix for CVE-2019-14232, the regular expressions used in the
+      implementation of django.utils.text.Truncator’s chars() and words()
+      methods (with html=True) were revised and improved. However, these
+      regular expressions still exhibited linear backtracking complexity, so
+      when given a very long, potentially malformed HTML input, the evaluation
+      would still be slow, leading to a potential denial of service
+      vulnerability.
+
+      The chars() and words() methods are used to implement the
+      truncatechars_html and truncatewords_html template filters, which were
+      thus also vulnerable.
+
+      The input processed by Truncator, when operating in HTML mode, has been
+      limited to the first five million characters in order to avoid potential
+      performance and memory issues.
+
+    <https://www.djangoproject.com/weblog/2023/oct/04/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Thu, 05 Oct 2023 09:17:06 +0200
+
+python-django (3:4.2.5-2) unstable; urgency=medium
+
+  * Upload 4.2.x branch to unstable with a -2 suffix to prevent collision with
+    previous upload of 3:4.2.5-1 to experimental.
+
+ -- Chris Lamb <lamby@debian.org>  Sun, 24 Sep 2023 13:52:16 -0700
+
+python-django (3:3.2.21-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2023-41164: Potential denial of service vulnerability in
+      django.utils.encoding.uri_to_iri(). This method was subject to potential
+      denial of service attack via certain inputs with a very large number of
+      Unicode characters. (Closes: #1051226)
+
+    <https://www.djangoproject.com/weblog/2023/sep/04/security-releases/>
+
+  * Refresh patches.
+
+ -- Chris Lamb <lamby@debian.org>  Mon, 04 Sep 2023 11:02:53 -0700
+
+python-django (3:3.2.20-1.1) unstable; urgency=high
+
+  [ Gianfranco Costamagna ]
+  * Non-maintainer upload.
+
+  [ Graham Inggs ]
+  * Cherry-pick upstream commit to fix URLValidator crash in
+    some edge cases (LP: #2025155, Closes: #1037920)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 04 Jul 2023 09:31:10 +0200
+
+python-django (3:3.2.20-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2023-36053: Potential regular expression denial of service
+      vulnerability in EmailValidator/URLValidator.
+
+      EmailValidator and URLValidator were subject to potential regular
+      expression denial of service attack via a very large number of domain
+      name labels of emails and URLs. (Closes: #1040225)
+
+ -- Chris Lamb <lamby@debian.org>  Mon, 03 Jul 2023 20:34:24 +0100
+
+python-django (3:3.2.19-1) unstable; urgency=medium
+
+  * New upstream security release.
+  * CVE-2023-31047: Prevent a potential bypass of validation when uploading
+    multiple files using one form field.
+
+    Uploading multiple files using one form field has never been supported by
+    forms.FileField or forms.ImageField as only the last uploaded file was
+    validated. Unfortunately, Uploading multiple files topic suggested
+    otherwise. In order to avoid the vulnerability, the ClearableFileInput and
+    FileInput form widgets now raise ValueError when the multiple HTML
+    attribute is set on them. To prevent the exception and keep the old
+    behavior, set the allow_multiple_selected attribute to True.
+
+    For more details on using the new attribute and handling of multiple files
+    through a single field, see:
+
+      <https://docs.djangoproject.com/en/stable/topics/http/file-uploads/#uploading-multiple-files>
+
+    (Closes: #1035467)
+
+  * Bump Standards-Version to 4.6.2.
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 03 May 2023 09:32:59 -0700
+
+python-django (3:3.2.18-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2023-24580: Potential denial-of-service vulnerability in file uploads
+
+      Passing certain inputs to multipart forms could result in too many open
+      files or memory exhaustion, and provided a potential vector for a
+      denial-of-service attack.
+
+      The number of files parts parsed is now limited via the new
+      DATA_UPLOAD_MAX_NUMBER_FILES setting.
+
+      Thanks to Jakob Ackermann for the report. (Closes: #1031290)
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 14 Feb 2023 09:12:57 -0800
+
+python-django (3:3.2.17-1) unstable; urgency=medium
+
+  * New security upstream release.
+    <https://www.djangoproject.com/weblog/2023/feb/01/security-releases/>
+
+    - CVE-2023-23969: Potential denial-of-service via Accept-Language headers
+
+      The parsed values of Accept-Language headers are cached in order to avoid
+      repetitive parsing. This leads to a potential denial-of-service vector
+      via excessive memory usage if large header values are sent.
+
+      In order to avoid this vulnerability, the Accept-Language header is now
+      parsed up to a maximum length. (Closes: #1030251)
+
+  * Drop 0010-Fixed-inspectdb.tests.InspectDBTestCase.test_custom_.patch;
+    applied upstream.
+  * Refresh all patches.
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 01 Feb 2023 08:01:01 -0800
+
+python-django (3:3.2.16-2) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Chris Lamb ]
+  * Drop README.source.
+
+  [ Lena Voytek ]
+  * Make unit tests compatible with Python 3.11 to fix build errors
+    (Closes: #1026476) (LP: #2002012)
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Thu, 19 Jan 2023 16:53:53 +0100
+
+python-django (3:3.2.16-1) unstable; urgency=high
+
+  * New upstream security release.
+    <https://www.djangoproject.com/weblog/2022/oct/04/security-releases/>
+
+    - CVE-2022-41323: Prevent a potential denial-of-service vulnerability in
+      internationalized URLs. Internationalised URLs were subject to potential
+      denial of service attack via the locale parameter. This is now escaped to
+      avoid this possibility.
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 04 Oct 2022 07:51:21 -0700
+
+python-django (3:3.2.15-1) unstable; urgency=high
+
+  * New upstream security release.
+
+    - CVE-2022-36359: Potential reflected file download vulnerability in
+      FileResponse. An application may have been vulnerable to a reflected file
+      download (RFD) attack that sets the Content-Disposition header of a
+      FileResponse when the filename was derived from user-supplied input. The
+      filename is now escaped to avoid this possibility.
+
+    <https://www.djangoproject.com/weblog/2022/aug/03/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 03 Aug 2022 07:11:45 -0700
+
+python-django (3:3.2.14-1) unstable; urgency=medium
+
+  * Revert Debian unstable to 3.2.x LTS release stream, bumping epoch.
+    (Closes: #1016090)
+  * Refresh patches.
+  * Bump Standards-Version to 4.6.1.
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 02 Aug 2022 09:02:41 -0700
+
+python-django (2:4.0.6-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2022-34265: Potential SQL injection via Trunc(kind) and
+      Extract(lookup_name) arguments.
+
+      "Trunc() and Extract() database functions were subject to SQL injection if
+      untrusted data was used as a kind/lookup_name value. Applications that
+      constrain the lookup name and kind choice to a known safe list are
+      unaffected."
+
+      "This security release mitigates the issue, but we have identified
+      improvements to the Database API methods related to date extract and
+      truncate that would be beneficial to add to Django 4.1 before it's final
+      release. This will impact 3rd party database backends using Django 4.1
+      release candidate 1 or newer, until they are able to update to the API
+      changes. We apologize for the inconvenience."
+
+      <https://www.djangoproject.com/weblog/2022/jul/04/security-releases/>
+
+  * Refresh patches.
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 05 Jul 2022 12:38:15 +0100
+
+python-django (2:4.0.5-2) unstable; urgency=medium
+
+  [ Lena Voytek ]
+  * Add updated version of SQLite 3.37+ / test_custom_fields patch.
+    (Closes: #1012784)
+
+  [ Chris Lamb ]
+  * Add debian/gitlab-ci.yml.
+    - Allow some elements of the pipeline to fail.
+
+ -- Chris Lamb <lamby@debian.org>  Thu, 16 Jun 2022 08:00:35 +0100
+
+python-django (2:4.0.5-1) unstable; urgency=medium
+
+  * Upload 4.x stable release stream to unstable using the 4.0.5 bugfix
+    release. (The 4.x stream has been in experimental since September 2021.)
+  * Update debian/gbp.conf and debian/watch to match new version series.
+  * Update patches.
+  * No need to delete django-admin.py script anymore; does not exist in 4.x.
+
+ -- Chris Lamb <lamby@debian.org>  Mon, 06 Jun 2022 12:31:50 +0100
+
+python-django (2:3.2.13-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2022-28346: Potential SQL injection in QuerySet.annotate(),
+      aggregate(), and extra().
+
+      QuerySet.annotate(), aggregate(), and extra() methods were subject to SQL
+      injection in column aliases, using a suitably crafted dictionary, with
+      dictionary expansion, as the **kwargs passed to these methods.
+
+    - CVE-2022-28347: Potential SQL injection via QuerySet.explain(**options)
+      on PostgreSQL.
+
+      QuerySet.explain() method was subject to SQL injection in option names,
+      using a suitably crafted dictionary, with dictionary expansion, as the
+      **options argument.
+
+    See <https://www.djangoproject.com/weblog/2022/apr/11/security-releases/>
+    for more info.
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 12 Apr 2022 18:22:30 +0200
+
+python-django (2:3.2.12-2) unstable; urgency=medium
+
+  * Fix a traceback around the handling of RequestSite/get_current_site() due
+    to a circular import by backporting commit 78163d1a from upstream. Thanks
+    to Raphaël Hertzog for the report. (Closes: #1003478)
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 22 Feb 2022 09:43:02 +0000
+
+python-django (2:3.2.12-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2022-22818: Possible XSS via {% debug %} template tag.
+
+      The {% debug %} template tag didn't properly encode the current context,
+      posing an XSS attack vector.
+
+      In order to avoid this vulnerability, {% debug %} no longer outputs
+      information when the DEBUG setting is False, and it ensures all context
+      variables are correctly escaped when the DEBUG setting is True.
+
+    - CVE-2022-23833: Denial-of-service possibility in file uploads.
+
+      Passing certain inputs to multipart forms could result in an
+      infinite loop when parsing files.
+
+    See <https://www.djangoproject.com/weblog/2022/feb/01/security-releases/>
+    for more information. (Closes: #1004752)
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 01 Feb 2022 09:28:58 -0800
+
+python-django (2:3.2.11-2) unstable; urgency=medium
+
+  [ Chris Lamb ]
+  * Fix compatibility with SQLite 3.37+. (Closes: #1004464)
+
+  [ Salman Mohammadi]
+  * Drop references to the deprecated python3-memcache package.
+
+  [ Mattia Rizzolo ]
+  * Add a Breaks against python3-django-countries (<< 7,1~).
+  * Add a Breaks against python3-django-tables2 (<< 2.3.4) (see #985774).
+
+ -- Chris Lamb <lamby@debian.org>  Fri, 28 Jan 2022 08:52:06 -0800
+
+python-django (2:3.2.11-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2021-45115: Denial-of-service possibility in
+      UserAttributeSimilarityValidator
+
+      UserAttributeSimilarityValidator incurred significant overhead evaluating
+      submitted password that were artificially large in relative to the
+      comparison values. On the assumption that access to user registration was
+      unrestricted this provided a potential vector for a denial-of-service
+      attack.
+
+      In order to mitigate this issue, relatively long values are now ignored
+      by UserAttributeSimilarityValidator.
+
+    - CVE-2021-45116: Potential information disclosure in dictsort template
+      filter
+
+      Due to leveraging the Django Template Language's variable resolution
+      logic, the dictsort template filter was potentially vulnerable to
+      information disclosure or unintended method calls, if passed a
+      suitably crafted key.
+
+      In order to avoid this possibility, dictsort now works with a
+      restricted resolution logic, that will not call methods, nor allow
+      indexing on dictionaries.
+
+    - CVE-2021-45452: Potential directory-traversal via Storage.save()
+
+      Storage.save() allowed directory-traversal if directly passed suitably
+      crafted file names.
+
+    See <https://www.djangoproject.com/weblog/2022/jan/04/security-releases/>
+    for more information. (Closes: #1003113)
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 04 Jan 2022 12:35:16 +0000
+
+python-django (2:3.2.10-2) unstable; urgency=medium
+
+  * autopkgtest: give the tests names.
+    This allows to easily run any of them individually, and also is better
+    than having them called "command1" and "command2" in the autopkgtest
+    logs.
+  * Backport fixes for more Django ORM regressions.
+    Upstream issue: https://code.djangoproject.com/ticket/33282).
+    That regression affects src:lava in Debian.
+    The patches are:
+    - 0007-Refs-32786-Made-Query.clear_ordering-not-to-cause-si.patch
+    - 0008-Refs-32690-Altered-lookups-Query-rhs-alterations-dur.patch
+    - 0009-Fixed-33282-Fixed-a-crash-when-OR-ing-subquery-and-a.patch
+
+ -- Antonio Terceiro <terceiro@debian.org>  Wed, 08 Dec 2021 15:11:52 -0300
+
+python-django (2:3.2.10-1) unstable; urgency=medium
+
+  * New upstream release:
+    - CVE-2021-44420: Potential bypass of an upstream access control based on
+      URL paths:
+    Full details are available here:
+    <https://www.djangoproject.com/weblog/2021/dec/07/security-releases/>
+  * Refresh patches.
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 07 Dec 2021 07:46:51 -0800
+
 python-django (2:3.2.9-2) unstable; urgency=medium
 
   * Team upload.
