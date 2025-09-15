@@ -1,6 +1,8 @@
 import os
+import sys
 from datetime import datetime
 
+from django.core.exceptions import SuspiciousOperation
 from django.core.serializers.json import DjangoJSONEncoder
 from django.test import SimpleTestCase
 from django.utils.functional import lazystr
@@ -84,6 +86,24 @@ class TestUtilsHtml(SimpleTestCase):
                 self.check_output(linebreaks, lazystr(value), output)
 
     def test_strip_tags(self):
+        # Python fixed a quadratic-time issue in HTMLParser in 3.13.6, 3.12.12,
+        # 3.11.14, 3.10.19, and 3.9.24. The fix slightly changes HTMLParser's
+        # output, so tests for particularly malformed input must handle both
+        # old and new results. The check below is temporary until all supported
+        # Python versions and CI workers include the fix. See:
+        # https://github.com/python/cpython/commit/6eb6c5db
+        min_fixed = {
+            (3, 14): (3, 14),
+            (3, 13): (3, 13, 6),
+            (3, 12): (3, 12, 12),
+            (3, 11): (3, 11, 14),
+            (3, 10): (3, 10, 19),
+            (3, 9): (3, 9, 24),
+        }
+        py_version = sys.version_info[:2]
+        htmlparser_fixed = (
+            py_version in min_fixed and sys.version_info >= min_fixed[py_version]
+        )
         items = (
             (
                 "<p>See: &#39;&eacute; is an apostrophe followed by e acute</p>",
@@ -111,13 +131,38 @@ class TestUtilsHtml(SimpleTestCase):
             ("&gotcha&#;<>", "&gotcha&#;<>"),
             ("<sc<!-- -->ript>test<<!-- -->/script>", "ript>test"),
             ("<script>alert()</script>&h", "alert()h"),
-            ("><!" + ("&" * 16000) + "D", "><!" + ("&" * 16000) + "D"),
+            (
+                "><!" + ("&" * 16000) + "D",
+                ">" if htmlparser_fixed else "><!" + ("&" * 16000) + "D",
+            ),
             ("X<<<<br>br>br>br>X", "XX"),
+            ("<" * 50 + "a>" * 50, ""),
+            (
+                ">" + "<a" * 500 + "a",
+                ">" if htmlparser_fixed else ">" + "<a" * 500 + "a",
+            ),
+            ("<a" * 49 + "a" * 951, "<a" * 49 + "a" * 951),
+            ("<" + "a" * 1_002, "<" + "a" * 1_002),
         )
         for value, output in items:
             with self.subTest(value=value, output=output):
                 self.check_output(strip_tags, value, output)
                 self.check_output(strip_tags, lazystr(value), output)
+
+    def test_strip_tags_suspicious_operation_max_depth(self):
+        value = "<" * 51 + "a>" * 51, "<a>"
+        with self.assertRaises(SuspiciousOperation):
+            strip_tags(value)
+
+    def test_strip_tags_suspicious_operation_large_open_tags(self):
+        items = [
+            ">" + "<a" * 501,
+            "<a" * 50 + "a" * 950,
+        ]
+        for value in items:
+            with self.subTest(value=value):
+                with self.assertRaises(SuspiciousOperation):
+                    strip_tags(value)
 
     def test_strip_tags_files(self):
         # Test with more lengthy content (also catching performance regressions)
@@ -328,6 +373,15 @@ class TestUtilsHtml(SimpleTestCase):
                 'Search for <a href="http://google.com/?q=">google.com/?q=</a>!',
             ),
             ("foo@example.com", '<a href="mailto:foo@example.com">foo@example.com</a>'),
+            (
+                "test@" + "한.글." * 15 + "aaa",
+                '<a href="mailto:test@'
+                + "xn--6q8b.xn--bj0b." * 15
+                + 'aaa">'
+                + "test@"
+                + "한.글." * 15
+                + "aaa</a>",
+            ),
         )
         for value, output in tests:
             with self.subTest(value=value):
@@ -336,12 +390,26 @@ class TestUtilsHtml(SimpleTestCase):
     def test_urlize_unchanged_inputs(self):
         tests = (
             ("a" + "@a" * 50000) + "a",  # simple_email_re catastrophic test
+            # Unicode domain catastrophic tests.
+            "a@" + "한.글." * 1_000_000 + "a",
+            "http://" + "한.글." * 1_000_000 + "com",
+            "www." + "한.글." * 1_000_000 + "com",
             ("a" + "." * 1000000) + "a",  # trailing_punctuation catastrophic test
             "foo@",
             "@foo.com",
             "foo@.example.com",
             "foo@localhost",
             "foo@localhost.",
+            # trim_punctuation catastrophic tests
+            "(" * 100_000 + ":" + ")" * 100_000,
+            "(" * 100_000 + "&:" + ")" * 100_000,
+            "([" * 100_000 + ":" + "])" * 100_000,
+            "[(" * 100_000 + ":" + ")]" * 100_000,
+            "([[" * 100_000 + ":" + "]])" * 100_000,
+            "&:" + ";" * 100_000,
+            "&.;" * 100_000,
+            ".;" * 100_000,
+            "&" + ";:" * 100_000,
         )
         for value in tests:
             with self.subTest(value=value):
