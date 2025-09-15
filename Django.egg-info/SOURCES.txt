@@ -8,13 +8,10 @@ MANIFEST.in
 README.rst
 package.json
 pyproject.toml
-setup.cfg
-setup.py
 Django.egg-info/PKG-INFO
 Django.egg-info/SOURCES.txt
 Django.egg-info/dependency_links.txt
 Django.egg-info/entry_points.txt
-Django.egg-info/not-zip-safe
 Django.egg-info/requires.txt
 Django.egg-info/top_level.txt
 django/__init__.py
@@ -4198,7 +4195,18 @@ docs/releases/4.2.10.txt
 docs/releases/4.2.11.txt
 docs/releases/4.2.12.txt
 docs/releases/4.2.13.txt
+docs/releases/4.2.14.txt
+docs/releases/4.2.15.txt
+docs/releases/4.2.16.txt
+docs/releases/4.2.17.txt
+docs/releases/4.2.18.txt
+docs/releases/4.2.19.txt
 docs/releases/4.2.2.txt
+docs/releases/4.2.20.txt
+docs/releases/4.2.21.txt
+docs/releases/4.2.22.txt
+docs/releases/4.2.23.txt
+docs/releases/4.2.24.txt
 docs/releases/4.2.3.txt
 docs/releases/4.2.4.txt
 docs/releases/4.2.5.txt
@@ -4279,7 +4287,6 @@ docs/topics/testing/tools.txt
 docs/topics/testing/_images/django_unittest_classes_hierarchy.graffle
 docs/topics/testing/_images/django_unittest_classes_hierarchy.pdf
 docs/topics/testing/_images/django_unittest_classes_hierarchy.svg
-extras/Makefile
 extras/README.TXT
 extras/django_bash_completion
 js_tests/tests.html
@@ -4294,7 +4301,6 @@ js_tests/admin/jsi18n-mocks.test.js
 js_tests/admin/navigation.test.js
 js_tests/gis/mapwidget.test.js
 scripts/manage_translations.py
-scripts/rpm-install.sh
 tests/.coveragerc
 tests/README.rst
 tests/runtests.py
@@ -4860,6 +4866,7 @@ tests/field_subclassing/fields.py
 tests/field_subclassing/tests.py
 tests/file_storage/__init__.py
 tests/file_storage/models.py
+tests/file_storage/test_base.py
 tests/file_storage/test_generate_filename.py
 tests/file_storage/test_inmemory_storage.py
 tests/file_storage/tests.py

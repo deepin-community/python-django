@@ -1,3 +1,234 @@
+python-django (3:4.2.24-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2025-57833: Potential SQL injection in FilteredRelation column
+      aliases. The FilteredRelation feature in Django was subject to a
+      potential SQL injection vulnerability in column aliases that was
+      exploitable via suitably crafted dictionary with dictionary expansion as
+      the **kwargs passed QuerySet.annotate() or QuerySet.alias().
+      (Closes: #1113865)
+
+    <https://www.djangoproject.com/weblog/2025/sep/03/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 03 Sep 2025 08:28:19 -0700
+
+python-django (3:4.2.23-1) unstable; urgency=high
+
+  * New upstream bugfix release. Quoting upstream:
+
+      Following the June 4, 2025 security release [uploaded to Debian as
+      3:4.2.22-1], the Django team is issuing releases [to] complete mitigation
+      for CVE-2025-48432 […].
+
+      These follow-up releases migrate remaining response logging paths to a
+      safer logging implementation, ensuring that all untrusted input is
+      properly escaped before being written to logs. This update does not
+      introduce a new CVE but strengthens the original fix.
+
+    <https://www.djangoproject.com/weblog/2025/jun/10/bugfix-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 10 Jun 2025 09:37:03 -0700
+
+python-django (3:4.2.22-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2025-48432: Potential log injection via unescaped request path.
+
+      Django's internal HTTP response logging used request.path directly,
+      allowing control characters (e.g. newlines or ANSI escape sequences) to
+      be written unescaped into logs. This could enable log injection or
+      forgery, letting attackers manipulate log appearance or structure,
+      especially in logs processed by external systems or viewed in terminals.
+
+      Although this does not directly impact Django's security model, it poses
+      risks when logs are consumed or interpreted by other tools.  To fix this,
+      the internal django.utils.log.log_response() function now escapes all
+      positional formatting arguments using a safe encoding.
+
+      (Closes: #1107282)
+
+    <https://www.djangoproject.com/weblog/2025/jun/04/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 04 Jun 2025 08:21:53 -0700
+
+python-django (3:4.2.21-1) unstable; urgency=medium
+
+  * New upstream security release:
+
+    - CVE-2025-32873: Denial-of-service possibility in strip_tags()
+
+      django.utils.html.strip_tags() would be slow to evaluate certain inputs
+      containing large sequences of incomplete HTML tags. This function is used
+      to implement the striptags template filter, which was therefore also
+      vulnerable. strip_tags() now raises a SuspiciousOperation exception if it
+      encounters an unusually large number of unclosed opening tags.
+
+      (Closes: #1104872)
+
+    <https://www.djangoproject.com/weblog/2025/may/07/security-releases/>
+
+  * Bump Standards-Version to 4.7.2.
+  * Add pybuild-plugin-pyproject to Build-Depends.
+
+ -- Chris Lamb <lamby@debian.org>  Fri, 09 May 2025 15:47:11 -0700
+
+python-django (3:4.2.20-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2025-26699: Address a potential denial-of-service in
+      django.utils.text.wrap. The wrap() method and wordwrap template filter
+      were subject to a potential denial-of-service attack when used with very
+      long strings. (Closes: #1099682)
+
+    <https://www.djangoproject.com/weblog/2025/mar/06/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Thu, 06 Mar 2025 17:55:06 +0000
+
+python-django (3:4.2.19-1) unstable; urgency=medium
+
+  * New upstream bugfix release.
+    <https://www.djangoproject.com/weblog/2025/feb/05/bugfix-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 05 Feb 2025 16:45:05 +0000
+
+python-django (3:4.2.18-1) unstable; urgency=high
+
+  * New upstream security release. (Closes: #1093049)
+
+    - CVE-2024-56374: Potential denial-of-service vulnerability in IPv6
+      validation.
+
+      A lack of upper bound limit enforcement in strings passed when performing
+      IPv6 validation could have led to a potential denial-of-service (DoS)
+      attack. The undocumented and private functions clean_ipv6_address and
+      is_valid_ipv6_address were vulnerable, as was the GenericIPAddressField
+      form field, which has now been updated to define a max_length of 39
+      characters. The GenericIPAddressField model field was not affected.
+
+    <https://www.djangoproject.com/weblog/2025/jan/14/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 15 Jan 2025 17:38:10 +0000
+
+python-django (3:4.2.17-2) unstable; urgency=medium
+
+  * Team upload.
+  * Fix CommandTypes.test_help_default_options_with_custom_arguments test on
+    Python 3.13+ (closes: #1082209).
+
+ -- Colin Watson <cjwatson@debian.org>  Thu, 02 Jan 2025 15:36:58 +0000
+
+python-django (3:4.2.17-1) unstable; urgency=medium
+
+  * New upstream security release:
+
+    - CVE-2024-53907: Potential DoS in django.utils.html.strip_tags.
+      The strip_tags() method and striptags template filter were subject to a
+      potential denial-of-service attack via certain inputs containing large
+      sequences of nested incomplete HTML entities.
+
+    - CVE-2024-53908: Potential SQL injection in HasKey(lhs, rhs) on Oracle
+      Direct usage of the django.db.models.fields.json.HasKey lookup on Oracle
+      was subject to SQL injection if untrusted data is used as a lhs value.
+      Applications that use the jsonfield.has_key lookup through the __ syntax
+      are unaffected.
+
+    <https://www.djangoproject.com/weblog/2024/dec/04/security-releases/>
+
+  * Refresh patches.
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 04 Dec 2024 17:33:13 +0000
+
+python-django (3:4.2.16-1) unstable; urgency=high
+
+  * New upstream security release:
+
+    - CVE-2024-45230: Potential denial-of-service vulnerability in
+      django.utils.html.urlize(). urlize and urlizetrunc were subject to a
+      potential denial-of-service attack via very large inputs with a specific
+      sequence of characters.
+
+    - CVE-2024-45231: Potential user email enumeration via response status on
+      password reset. Due to unhandled email sending failures, the
+      django.contrib.auth.forms.PasswordResetForm class allowed remote
+      attackers to enumerate user emails by issuing password reset requests and
+      observing the outcomes. To mitigate this risk, exceptions occurring
+      during password reset email sending are now handled and logged using the
+      django.contrib.auth logger.
+
+  * Bump Standards-Version to 4.7.0.
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 03 Sep 2024 17:31:33 +0100
+
+python-django (3:4.2.15-1) unstable; urgency=high
+
+  * New upstream security release. (Closes: #1078074)
+
+    - CVE-2024-41989: Memory exhaustion in django.utils.numberformat.
+
+      The floatformat template filter is subject to significant memory
+      consumption when given a string representation of a number in
+      scientific notation with a large exponent.
+
+    - CVE-2024-41990: Potential denial-of-service in django.utils.html.urlize.
+
+      The urlize() and urlizetrunc() template filters are subject to a
+      potential denial-of-service attack via very large inputs with a specific
+      sequence of characters.
+
+    - CVE-2024-41991: Potential denial-of-service vulnerability in
+      django.utils.html.urlize() and AdminURLFieldWidget
+
+      The urlize and urlizetrunc template filters, and the AdminURLFieldWidget
+      widget, are subject to a potential denial-of-service attack via certain
+      inputs with a very large number of Unicode characters.
+
+    - CVE-2024-42005: Potential SQL injection in QuerySet.values() and
+      values_list()
+
+      QuerySet.values() and values_list() methods on models with a JSONField
+      are subject to SQL injection in column aliases via a crafted JSON object
+      key as a passed *arg.
+
+    <https://www.djangoproject.com/weblog/2024/aug/06/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Tue, 06 Aug 2024 16:59:24 +0100
+
+python-django (3:4.2.14-1) unstable; urgency=medium
+
+  * New upstream security release. (Closes: #1076069)
+
+    - CVE-2024-38875: Prevent a potential denial-of-service in
+      django.utils.html.urlize. This method (and urlizetrunc) were subject to a
+      potential DoS attack via specially-crafted inputs with a very large
+      number of brackets.
+
+    - CVE-2024-39329: Avoid a username enumeration vulnerability through timing
+      difference for users with unusable password. The authenticate method of
+      django.contrib.auth.backends.ModelBackend method allowed remote attackers
+      to enumerate users via a timing attack involving login requests for users
+      with unusable passwords.
+
+    - CVE-2024-39330: Address a potential directory-traversal in
+      django.core.files.storage.Storage.save. Derived classes of this method's
+      base class which override generate_filename without replicating the file
+      path validations existing in the parent class allowed for potential
+      directory-traversal via certain inputs when calling save(). Built-in
+      Storage sub-classes were not affected by this vulnerability.
+
+    - CVE-2024-39614: Fix a potential denial-of-service in
+      django.utils.translation.get_supported_language_variant. This method
+      was subject to a potential DoS attack when used with very long strings
+      containing specific characters. To mitigate this vulnerability, the
+      language code provided to get_supported_language_variant is now parsed up
+      to a maximum length of 500 characters.
+
+    <https://www.djangoproject.com/weblog/2024/jul/09/security-releases/>
+
+ -- Chris Lamb <lamby@debian.org>  Wed, 10 Jul 2024 09:50:49 +0100
+
 python-django (3:4.2.13-1) unstable; urgency=medium
 
   * New upstream bugfix releases.
