@@ -1,0 +1,54 @@
+From: Mariusz Felisiak <felisiak.mariusz@gmail.com>
+Date: Sun, 17 Nov 2024 16:07:23 +0100
+Subject: Refs #35844 -- Fixed copying BaseContext and its subclasses on
+ Python 3.14+.
+
+super objects are copyable on Python 3.14+:
+
+https://github.com/python/cpython/commit/5ca4e34bc1aab8321911aac6d5b2b9e75ff764d8
+
+and can no longer be used in BaseContext.__copy__().
+
+Origin: backport, https://github.com/django/django/pull/18824
+Bug-Debian: https://bugs.debian.org/1122185
+Last-Update: 2025-12-17
+---
+ django/template/context.py           | 4 +++-
+ tests/template_tests/test_context.py | 8 ++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/django/template/context.py b/django/template/context.py
+index ccf0b43..5c38e40 100644
+--- a/django/template/context.py
++++ b/django/template/context.py
+@@ -35,7 +35,9 @@ class BaseContext:
+             self.dicts.append(value)
+ 
+     def __copy__(self):
+-        duplicate = copy(super())
++        duplicate = BaseContext()
++        duplicate.__class__ = self.__class__
++        duplicate.__dict__ = copy(self.__dict__)
+         duplicate.dicts = self.dicts[:]
+         return duplicate
+ 
+diff --git a/tests/template_tests/test_context.py b/tests/template_tests/test_context.py
+index 4feb9e5..36de455 100644
+--- a/tests/template_tests/test_context.py
++++ b/tests/template_tests/test_context.py
+@@ -1,3 +1,4 @@
++from copy import copy
+ from unittest import mock
+ 
+ from django.http import HttpRequest
+@@ -276,3 +277,10 @@ class RequestContextTests(SimpleTestCase):
+         context = RequestContext(request, {})
+         context["foo"] = "foo"
+         self.assertEqual(template.render(context), "foo")
++
++    def test_context_copyable(self):
++        request_context = RequestContext(HttpRequest())
++        request_context_copy = copy(request_context)
++        self.assertIsInstance(request_context_copy, RequestContext)
++        self.assertEqual(request_context_copy.dicts, request_context.dicts)
++        self.assertIsNot(request_context_copy.dicts, request_context.dicts)
