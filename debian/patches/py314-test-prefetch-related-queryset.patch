@@ -1,0 +1,52 @@
+From: Mariusz Felisiak <felisiak.mariusz@gmail.com>
+Date: Fri, 20 Dec 2024 08:43:14 +0100
+Subject: Refs #35844 -- Fixed
+ OtherModelFormTests.test_prefetch_related_queryset() test on Python 3.14+.
+
+https://github.com/python/cpython/commit/5a23994a3dbee43a0b08f5920032f60f38b63071
+
+Origin: backport, https://github.com/django/django/pull/18953.patch
+Bug-Debian: https://bugs.debian.org/1122185
+Last-Update: 2025-12-17
+---
+ django/utils/version.py    | 1 +
+ tests/model_forms/tests.py | 7 ++++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/django/utils/version.py b/django/utils/version.py
+index 71ec70b..0144a05 100644
+--- a/django/utils/version.py
++++ b/django/utils/version.py
+@@ -18,6 +18,7 @@ PY310 = sys.version_info >= (3, 10)
+ PY311 = sys.version_info >= (3, 11)
+ PY312 = sys.version_info >= (3, 12)
+ PY313 = sys.version_info >= (3, 13)
++PY314 = sys.version_info >= (3, 14)
+ 
+ 
+ def get_version(version=None):
+diff --git a/tests/model_forms/tests.py b/tests/model_forms/tests.py
+index 8268032..0254393 100644
+--- a/tests/model_forms/tests.py
++++ b/tests/model_forms/tests.py
+@@ -23,6 +23,7 @@ from django.forms.models import (
+ from django.template import Context, Template
+ from django.test import SimpleTestCase, TestCase, skipUnlessDBFeature
+ from django.test.utils import isolate_apps
++from django.utils.version import PY314
+ 
+ from .models import (
+     Article,
+@@ -2947,7 +2948,11 @@ class OtherModelFormTests(TestCase):
+                 return ", ".join(c.name for c in obj.colours.all())
+ 
+         field = ColorModelChoiceField(ColourfulItem.objects.prefetch_related("colours"))
+-        with self.assertNumQueries(3):  # would be 4 if prefetch is ignored
++        # CPython < 3.14 calls ModelChoiceField.__len__() when coercing to
++        # tuple. Python 3.14+ doesn't call __len__() and so .count()
++        # isn't called on the QuerySet. The following would trigger an extra
++        # query if prefetch were ignored.
++        with self.assertNumQueries(2 if PY314 else 3):
+             self.assertEqual(
+                 tuple(field.choices),
+                 (

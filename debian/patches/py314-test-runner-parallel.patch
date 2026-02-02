@@ -1,0 +1,73 @@
+From: Mariusz Felisiak <felisiak.mariusz@gmail.com>
+Date: Wed, 16 Oct 2024 19:37:20 +0200
+Subject: Refs #35844 -- Fixed tests for test --parallel option on Python
+ 3.14+.
+
+"forkserver" is the new default on POSIX systems, and Django doesn't
+support parallel tests with "forkserver":
+
+https://github.com/python/cpython/commit/b65f2cdfa77d8d12c213aec663ddaaa30d75a4b2
+
+Origin: upstream, https://github.com/django/django/pull/18685
+Bug-Debian: https://bugs.debian.org/1122185
+Last-Update: 2025-12-17
+---
+ tests/test_runner/test_discover_runner.py | 1 +
+ tests/test_runner/tests.py                | 5 +++++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/tests/test_runner/test_discover_runner.py b/tests/test_runner/test_discover_runner.py
+index bca9037..5c94695 100644
+--- a/tests/test_runner/test_discover_runner.py
++++ b/tests/test_runner/test_discover_runner.py
+@@ -44,6 +44,7 @@ def change_loader_patterns(patterns):
+ @mock.patch.dict(os.environ, {}, clear=True)
+ @mock.patch.object(multiprocessing, "cpu_count", return_value=12)
+ # Python 3.8 on macOS defaults to 'spawn' mode.
++# Python 3.14 on POSIX systems defaults to 'forkserver' mode.
+ @mock.patch.object(multiprocessing, "get_start_method", return_value="fork")
+ class DiscoverRunnerParallelArgumentTests(SimpleTestCase):
+     def get_parser(self):
+diff --git a/tests/test_runner/tests.py b/tests/test_runner/tests.py
+index c8b40ea..03444f1 100644
+--- a/tests/test_runner/tests.py
++++ b/tests/test_runner/tests.py
+@@ -481,6 +481,7 @@ class ManageCommandTests(unittest.TestCase):
+ @mock.patch.dict(os.environ, {}, clear=True)
+ @mock.patch.object(multiprocessing, "cpu_count", return_value=12)
+ class ManageCommandParallelTests(SimpleTestCase):
++    @mock.patch.object(multiprocessing, "get_start_method", return_value="fork")
+     def test_parallel_default(self, *mocked_objects):
+         with captured_stderr() as stderr:
+             call_command(
+@@ -490,6 +491,7 @@ class ManageCommandParallelTests(SimpleTestCase):
+             )
+         self.assertIn("parallel=12", stderr.getvalue())
+ 
++    @mock.patch.object(multiprocessing, "get_start_method", return_value="fork")
+     def test_parallel_auto(self, *mocked_objects):
+         with captured_stderr() as stderr:
+             call_command(
+@@ -525,12 +527,14 @@ class ManageCommandParallelTests(SimpleTestCase):
+         self.assertEqual(stderr.getvalue(), "")
+ 
+     @mock.patch.dict(os.environ, {"DJANGO_TEST_PROCESSES": "7"})
++    @mock.patch.object(multiprocessing, "get_start_method", return_value="fork")
+     def test_no_parallel_django_test_processes_env(self, *mocked_objects):
+         with captured_stderr() as stderr:
+             call_command("test", testrunner="test_runner.tests.MockTestRunner")
+         self.assertEqual(stderr.getvalue(), "")
+ 
+     @mock.patch.dict(os.environ, {"DJANGO_TEST_PROCESSES": "invalid"})
++    @mock.patch.object(multiprocessing, "get_start_method", return_value="fork")
+     def test_django_test_processes_env_non_int(self, *mocked_objects):
+         with self.assertRaises(ValueError):
+             call_command(
+@@ -540,6 +544,7 @@ class ManageCommandParallelTests(SimpleTestCase):
+             )
+ 
+     @mock.patch.dict(os.environ, {"DJANGO_TEST_PROCESSES": "7"})
++    @mock.patch.object(multiprocessing, "get_start_method", return_value="fork")
+     def test_django_test_processes_parallel_default(self, *mocked_objects):
+         for parallel in ["--parallel", "--parallel=auto"]:
+             with self.subTest(parallel=parallel):
