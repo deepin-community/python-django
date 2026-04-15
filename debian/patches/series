@@ -8,3 +8,4 @@ py314-test-runner-parallel.patch
 py314-copy-BaseContext.patch
 py314-test-prefetch-related-queryset.patch
 test-strip-tags-incomplete-entities.patch
+CVE-2026-3902.patch
