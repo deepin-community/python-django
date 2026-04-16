@@ -1,0 +1,33 @@
+Description: Fix CVE-2026-4292: privilege abuse in ModelAdmin.list_editable
+ Admin changelist forms using ModelAdmin.list_editable incorrectly allowed new
+ instances to be created via forged POST data. This fix adds a check to disallow
+ instance creation when using list_editable.
+Author: Jacob Walls <jacobtylerwalls@gmail.com>
+Origin: upstream, https://github.com/django/django/commit/abfe1a1c57a57cfaf6dd4a0571c029401a0fe743
+Bug: https://security-tracker.debian.org/tracker/CVE-2026-4292
+Forwarded: not-needed
+---
+ django/contrib/admin/options.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py
+index 1bbb302611a9..bb51884a8350 100644
+--- a/django/contrib/admin/options.py
++++ b/django/contrib/admin/options.py
+@@ -30,6 +30,7 @@
+ from django.contrib.admin.widgets import AutocompleteSelect, AutocompleteSelectMultiple
+ from django.contrib.auth import get_permission_codename
+ from django.core.exceptions import (
++    BadRequest,
+     FieldDoesNotExist,
+     FieldError,
+     PermissionDenied,
+@@ -2016,6 +2017,8 @@ def changelist_view(self, request, extra_context=None):
+                     for form in formset.forms:
+                         if form.has_changed():
+                             obj = self.save_form(request, form, change=True)
++                            if obj._state.adding:
++                                raise BadRequest("list_editable does not allow adding.")
+                             self.save_model(request, obj, form, change=True)
+                             self.save_related(request, form, formsets=[], change=True)
+                             change_msg = self.construct_change_message(
