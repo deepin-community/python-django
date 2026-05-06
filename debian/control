@@ -25,12 +25,12 @@ Build-Depends:
  python3-jinja2 <!nocheck>,
  python3-numpy <!nocheck>,
  python3-pil <!nocheck>,
- python3-pytz <!nocheck>,
  python3-selenium <!nocheck>,
  python3-setuptools,
  python3-sphinx,
  python3-sqlparse <!nocheck>,
  python3-tblib <!nocheck>,
+ python3-tz <!nocheck>,
  python3-yaml <!nocheck>,
 Build-Depends-Indep:
  libjs-jquery,
@@ -55,6 +55,7 @@ Depends:
 Recommends:
  libjs-jquery,
  python3-sqlparse,
+ python3-tz,
 Suggests:
  bpython3,
  geoip-database-contrib,
@@ -69,7 +70,6 @@ Suggests:
  python3-mysqldb,
  python3-pil,
  python3-psycopg2,
- python3-pytz,
  python3-selenium,
  python3-sqlite,
  python3-yaml,
